@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -48,16 +48,40 @@ button{font:inherit;cursor:pointer}
 #resume ul{margin:0;padding-left:18px}
 #resume p{margin:0}
 .t-classic header{text-align:center;border-bottom:2px solid var(--a);padding-bottom:9px}
-.t-classic .chip:not(:last-child)::after{content:", "}
+.t-classic .chip:not(:last-child)::after,.t-minimal .chip:not(:last-child)::after,.t-elegant .chip:not(:last-child)::after,.t-compact .chip:not(:last-child)::after{content:", "}
 .t-modern{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .t-modern header{background:var(--a);color:#fff;margin:-22px -22px 4px;padding:20px 22px}
 .t-modern .chip{display:inline-block;background:#eef1f5;border-radius:4px;padding:2px 8px;margin:0 4px 4px 0}
 .t-modern h3{border:0;border-left:4px solid var(--a);padding-left:8px}
+#resume header.hp{display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:center;gap:14px;text-align:left}
+#resume .ht{flex:1;min-width:0}
+#resume .ph{width:84px;height:112px;object-fit:cover;border:1px solid #ccc;border-radius:4px;flex:none;background:#fff}
+#resume.t-minimal{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#resume.t-minimal header{text-align:left;border:0;padding:0 0 4px}
+#resume.t-minimal h1{color:var(--a);font-weight:600;font-size:26px}
+#resume.t-minimal h3{border:0;color:var(--a);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin:16px 0 4px}
+#resume.t-elegant header{text-align:center;border-top:1px solid var(--a);border-bottom:1px solid var(--a);padding:10px 0}
+#resume.t-elegant h1{font-size:28px;letter-spacing:.05em;font-weight:400}
+#resume.t-elegant h3{text-align:center;font-weight:400;font-size:15px;font-variant:small-caps;letter-spacing:.06em;border-bottom:1px solid #bbb}
+#resume.t-compact{font-size:11.5px;line-height:1.35}
+#resume.t-compact h1{font-size:21px}
+#resume.t-compact header{border-bottom:2px solid var(--a);padding-bottom:5px}
+#resume.t-compact h3{margin:9px 0 3px}
+#resume.t-compact .e{margin-bottom:3px}
+#resume.t-sidebar{padding:0;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.sb{display:grid;grid-template-columns:34% 1fr}
+.sb aside{background:var(--a);color:#fff;padding:18px 14px}
+.sb .mn{padding:20px}
+#resume.t-sidebar aside h3{color:#fff;border-bottom:1px solid rgba(255,255,255,.45)}
+#resume.t-sidebar aside p{font-size:12px;margin:0 0 3px}
+#resume.t-sidebar .ph{width:100%;height:auto;aspect-ratio:3/4;border:2px solid #fff;margin-bottom:6px}
+#resume.t-sidebar .chip{display:block}
+#resume.t-sidebar .mn h3{border-bottom:2px solid var(--a)}
 @page{size:A4;margin:12mm}
 @media print{:root{padding:0}body{background:#fff}.no-print{display:none!important}.prev{display:block!important}.app{display:block;padding:0}
 #resume{box-shadow:none;padding:0;max-width:none}
 .t-modern header{margin:0 0 4px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.t-modern .chip{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.t-modern .chip,#resume aside{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
@@ -72,13 +96,17 @@ button{font:inherit;cursor:pointer}
 <input data-f="phone" type="tel" placeholder="Phone" autocomplete="tel">
 <input data-f="location" placeholder="City, State">
 <input data-f="links" placeholder="GitHub / LinkedIn link">
+<h2>Photo <small>optional</small></h2>
+<div class="row"><input id="ph" type="file" accept="image/*"><button class="sec" id="phx" type="button">Remove photo</button></div>
 <h2>Summary</h2>
 <textarea data-f="summary" rows="3" placeholder="2-3 lines about you and what you're looking for"></textarea>
 <h2>Skills <small>separate with commas</small></h2>
 <input data-f="skills" placeholder="Java, SQL, HTML, CSS, Git">
 <div id="lists"></div>
+<h2>Hobbies and interests <small>separate with commas</small></h2>
+<input data-f="hobbies" placeholder="Cricket, Football, Digital marketing">
 <h2>Style</h2>
-<div class="row"><select id="tpl"><option value="classic">Classic</option><option value="modern">Modern</option></select>
+<div class="row"><select id="tpl"><option value="classic">Classic</option><option value="modern">Modern</option><option value="minimal">Minimal</option><option value="elegant">Elegant</option><option value="compact">Compact (fits more)</option><option value="sidebar">Sidebar</option></select>
 <input id="acc" type="color" value="#1f4e79" aria-label="Accent color"></div>
 <div class="row"><button class="pri" id="pdf">Save as PDF</button><button class="sec" id="rst">Reset</button></div>
 </section>
@@ -91,11 +119,13 @@ button{font:inherit;cursor:pointer}
 const $=s=>document.querySelector(s);
 const LISTS={
  education:[['school','School / College'],['degree','Degree'],['year','Year · CGPA']],
+ internships:[['company','Company / Organization'],['role','Role'],['period','Duration (e.g. Jun-Jul 2026)'],['desc','What you did']],
  projects:[['name','Project name'],['tech','Tech used'],['desc','What it does']],
- certs:[['name','Certification']]};
-const TITLES={education:'Education',projects:'Projects',certs:'Certifications'};
-const blank=()=>({name:'',title:'',email:'',phone:'',location:'',links:'',summary:'',skills:'',
- template:'classic',accent:'#1f4e79',education:[{}],projects:[{}],certs:[{}]});
+ certs:[['name','Certification']],
+ activities:[['name','Activity / Club / Sport'],['role','Role or achievement'],['year','Year']]};
+const TITLES={education:'Education',internships:'Internships',projects:'Projects',certs:'Certifications',activities:'Extra-curricular activities'};
+const blank=()=>({name:'',title:'',email:'',phone:'',location:'',links:'',summary:'',skills:'',photo:'',hobbies:'',
+ template:'classic',accent:'#1f4e79',education:[{}],internships:[{}],projects:[{}],certs:[{}],activities:[{}]});
 let S=blank(),armed=false;
 try{const d=JSON.parse(localStorage.getItem('rb'));if(d)S=Object.assign(blank(),d)}catch(e){}
 const save=()=>{try{localStorage.setItem('rb',JSON.stringify(S))}catch(e){}};
@@ -114,19 +144,30 @@ function fillForm(){
  $('#tpl').value=S.template;$('#acc').value=S.accent;renderLists();
 }
 function render(){
- const r=$('#resume');r.className='t-'+S.template;r.style.setProperty('--a',S.accent);
- const contact=[S.email,S.phone,S.location,S.links].filter(Boolean).map(esc).join(' · ');
+ const r=$('#resume'),T=S.template;r.className='t-'+T;r.style.setProperty('--a',S.accent);
  const sec=(t,b)=>b?`<h3>${t}</h3>${b}`:'';
  const entry=(a,b,c)=>`<div class="e"><b>${esc(a)}</b><span>${esc(b)}</span>${c?`<div>${esc(c)}</div>`:''}</div>`;
+ const chips=v=>String(v||'').split(',').map(x=>x.trim()).filter(Boolean).map(x=>`<span class="chip">${esc(x)}</span>`).join('');
+ const j=(...a)=>a.filter(Boolean).join(' · ');
  const edu=S.education.filter(x=>x.school||x.degree).map(x=>entry(x.school,x.year,x.degree)).join('');
- const sk=S.skills.split(',').map(s=>s.trim()).filter(Boolean).map(s=>`<span class="chip">${esc(s)}</span>`).join('');
+ const intn=S.internships.filter(x=>x.company||x.role).map(x=>entry(j(x.company,x.role),x.period,x.desc)).join('');
  const pr=S.projects.filter(x=>x.name||x.desc).map(x=>entry(x.name,x.tech,x.desc)).join('');
+ const act=S.activities.filter(x=>x.name||x.role).map(x=>entry(x.name,x.year,x.role)).join('');
  const ce=S.certs.filter(x=>x.name);
- r.innerHTML=`<header><h1>${esc(S.name)||'Your Name'}</h1>${S.title?`<p class="sub">${esc(S.title)}</p>`:''}${contact?`<p class="ct">${contact}</p>`:''}</header>`+
-  sec('Summary',S.summary?`<p>${esc(S.summary)}</p>`:'')+sec('Education',edu)+sec('Skills',sk?`<p>${sk}</p>`:'')+
-  sec('Projects',pr)+sec('Certifications',ce.length?`<ul>${ce.map(x=>`<li>${esc(x.name)}</li>`).join('')}</ul>`:'');
+ const cert=ce.length?`<ul>${ce.map(x=>`<li>${esc(x.name)}</li>`).join('')}</ul>`:'';
+ const sk=chips(S.skills),hb=chips(S.hobbies),name=esc(S.name)||'Your Name';
+ const img=S.photo?`<img class="ph" src="${S.photo}" alt="Photo">`:'';
+ const sum=S.summary?`<p>${esc(S.summary)}</p>`:'';
+ if(T==='sidebar'){
+  const cl=[S.email,S.phone,S.location,S.links].filter(Boolean).map(x=>`<p>${esc(x)}</p>`).join('');
+  r.innerHTML=`<div class="sb"><aside>${img}${sec('Contact',cl)}${sec('Skills',sk)}${sec('Hobbies',hb)}${sec('Certifications',cert)}</aside><div class="mn"><h1>${name}</h1>${S.title?`<p class="sub">${esc(S.title)}</p>`:''}${sec('Summary',sum)}${sec('Education',edu)}${sec('Internships',intn)}${sec('Projects',pr)}${sec('Extra-curricular activities',act)}</div></div>`;
+ }else{
+  const contact=[S.email,S.phone,S.location,S.links].filter(Boolean).map(esc).join(' · ');
+  r.innerHTML=`<header${S.photo?' class="hp"':''}>${img}<div class="ht"><h1>${name}</h1>${S.title?`<p class="sub">${esc(S.title)}</p>`:''}${contact?`<p class="ct">${contact}</p>`:''}</div></header>`+
+   sec('Summary',sum)+sec('Education',edu)+sec('Skills',sk?`<p>${sk}</p>`:'')+sec('Internships',intn)+sec('Projects',pr)+sec('Certifications',cert)+sec('Extra-curricular activities',act)+sec('Hobbies and interests',hb?`<p>${hb}</p>`:'');
+ }
  if(r.clientWidth){const long=r.scrollHeight/r.clientWidth>1.41;
-  $('#warn').textContent=long?'⚠ Longer than one A4 page. Trim some content.':'✓ Fits on one A4 page';}
+  $('#warn').textContent=long?'⚠ Longer than one A4 page. Try the Compact template or trim content.':'✓ Fits on one A4 page';}
 }
 document.addEventListener('input',e=>{
  const t=e.target,d=t.dataset;
@@ -139,10 +180,19 @@ document.addEventListener('click',e=>{
  if(d.del){const[k,i]=d.del.split(':');S[k].splice(+i,1);if(!S[k].length)S[k].push({});renderLists();save();render();return}
  if(t.id==='tE'||t.id==='tP'){document.body.classList.toggle('pv',t.id==='tP');
   $('#tE').classList.toggle('on',t.id==='tE');$('#tP').classList.toggle('on',t.id==='tP');render();window.scrollTo(0,0)}
+ if(t.id==='phx'){S.photo='';$('#ph').value='';save();render()}
  if(t.id==='pdf')window.print();
  if(t.id==='rst'){if(!armed){armed=true;t.textContent='Tap again to erase all';setTimeout(()=>{armed=false;t.textContent='Reset'},3000)}
   else{S=blank();save();fillForm();render();armed=false;t.textContent='Reset'}}
 });
+$('#ph').addEventListener('change',e=>{
+ const f=e.target.files[0];if(!f)return;
+ const img=new Image(),u=URL.createObjectURL(f);
+ img.onload=()=>{const W=240,H=320,c=document.createElement('canvas');c.width=W;c.height=H;
+  const k=Math.max(W/img.width,H/img.height),w=img.width*k,h=img.height*k;
+  c.getContext('2d').drawImage(img,(W-w)/2,(H-h)/2,w,h);
+  S.photo=c.toDataURL('image/jpeg',.85);URL.revokeObjectURL(u);save();render();};
+ img.src=u;});
 fillForm();render();
 </script>
 </body>
